@@ -858,6 +858,24 @@ pages:
       openrouter-audio-speech:
         description: openrouter.ai
         title: OpenRouter
+      style-bert-vits2:
+        title: Style-Bert-VITS2
+        description: Máy chủ Style-Bert-VITS2 cục bộ (server_fastapi.py). Hãy khởi động máy chủ và đặt URL gốc (cổng mặc định 5000). Bật CORS trên SBV2 nếu trình duyệt chặn.
+        fields:
+          api_key_hint:
+            title: Không cần API key
+            description: Provider này gọi máy chủ HTTP Style-Bert-VITS2 cục bộ. Trường API key phía trên là tùy chọn và không dùng.
+          model:
+            label: Mô hình
+            description: Checkpoint trên máy chủ SBV2 (từ GET /models/info).
+            placeholder: Chọn mô hình…
+          language:
+            label: Ngôn ngữ văn bản
+            description: JP / EN / ZH — khớp với ngôn ngữ đầu vào (tham số language của máy chủ).
+        playground:
+          default-text: Xin chào. Đây là thử nghiệm Style-Bert-VITS2.
+        connection_error:
+          title: Không kết nối được máy chủ Style-Bert-VITS2
       perplexity:
         description: perplexity.ai
         title: Perplexity

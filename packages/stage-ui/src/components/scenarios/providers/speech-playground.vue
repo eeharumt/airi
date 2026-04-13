@@ -34,15 +34,19 @@ const useSSML = ref(false)
 const ssmlText = ref('')
 const selectedVoice = ref('')
 
-// Watch for changes in available voices
+// Reset selection when the list changes (e.g. model switch) so we never keep a voice from another model.
 watch(
   () => props.availableVoices,
   (newVoices) => {
-    if (newVoices.length > 0 && !selectedVoice.value) {
-      selectedVoice.value = newVoices[0]?.id || ''
+    const validIds = new Set(newVoices.map(v => v.id))
+    if (newVoices.length === 0) {
+      selectedVoice.value = ''
+      return
     }
+    if (!selectedVoice.value || !validIds.has(selectedVoice.value))
+      selectedVoice.value = newVoices[0]?.id || ''
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 
 const voiceOptions = computed(() => {

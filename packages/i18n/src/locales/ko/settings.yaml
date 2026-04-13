@@ -858,6 +858,24 @@ pages:
       openrouter-audio-speech:
         description: openrouter.ai
         title: OpenRouter
+      style-bert-vits2:
+        title: Style-Bert-VITS2
+        description: 로컬 Style-Bert-VITS2 서버(server_fastapi.py)용입니다. 서버를 실행하고 기본 URL(기본 포트 5000)을 설정하세요. 브라우저에서 차단되면 SBV2에서 CORS를 허용하세요.
+        fields:
+          api_key_hint:
+            title: API 키 불필요
+            description: 로컬 Style-Bert-VITS2 HTTP 서버로 요청합니다. 위의 API 키 필드는 사용되지 않습니다.
+          model:
+            label: 모델
+            description: SBV2 서버에 로드된 체크포인트(GET /models/info).
+            placeholder: 모델 선택…
+          language:
+            label: 텍스트 언어
+            description: JP / EN / ZH — 입력 텍스트 언어와 맞추세요(서버 language 매개변수).
+        playground:
+          default-text: 안녕하세요. Style-Bert-VITS2 테스트입니다.
+        connection_error:
+          title: Style-Bert-VITS2 서버에 연결할 수 없습니다
       perplexity:
         description: perplexity.ai
         title: Perplexity
