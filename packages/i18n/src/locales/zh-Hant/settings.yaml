@@ -860,6 +860,24 @@ pages:
       openrouter-audio-speech:
         description: openrouter.ai
         title: OpenRouter
+      style-bert-vits2:
+        title: Style-Bert-VITS2
+        description: 本機 Style-Bert-VITS2 伺服器（server_fastapi.py）。請先啟動伺服器並設定基礎 URL（預設連接埠 5000）。若瀏覽器阻擋跨域請求，請在 SBV2 設定中啟用 CORS。
+        fields:
+          api_key_hint:
+            title: 無需 API 金鑰
+            description: 此提供者會呼叫本機 Style-Bert-VITS2 HTTP 服務。上方的 API 金鑰欄位為選用且不會使用。
+          model:
+            label: 模型
+            description: SBV2 伺服器上已載入的檢查點（來自 GET /models/info）。
+            placeholder: 選擇模型…
+          language:
+            label: 文字語言
+            description: JP / EN / ZH — 應與輸入文字語言一致（伺服器 language 參數）。
+        playground:
+          default-text: 你好。這是 Style-Bert-VITS2 測試。
+        connection_error:
+          title: 無法連線到 Style-Bert-VITS2 伺服器
       perplexity:
         description: perplexity.ai
         title: Perplexity

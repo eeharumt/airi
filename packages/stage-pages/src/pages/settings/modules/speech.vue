@@ -110,6 +110,21 @@ watch(activeSpeechModel, async () => {
   }
 })
 
+// Style-Bert-VITS2 model ids are "0","1",… — a persisted value like "tts-1" would filter out every voice.
+watch(
+  [activeSpeechProvider, providerModels],
+  () => {
+    if (activeSpeechProvider.value !== 'style-bert-vits2')
+      return
+    const ids = providerModels.value.map(m => m.id)
+    if (ids.length === 0)
+      return
+    if (!activeSpeechModel.value || !ids.includes(activeSpeechModel.value))
+      activeSpeechModel.value = ids[0]!
+  },
+  { immediate: true },
+)
+
 // Function to generate speech
 async function generateTestSpeech() {
   if (!testText.value.trim() && !useSSML.value)

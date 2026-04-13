@@ -860,6 +860,24 @@ pages:
       openrouter-audio-speech:
         description: openrouter.ai
         title: OpenRouter
+      style-bert-vits2:
+        title: Style-Bert-VITS2
+        description: Локальный сервер Style-Bert-VITS2 (server_fastapi.py). Запустите сервер и укажите базовый URL (порт по умолчанию 5000). Включите CORS в SBV2 при блокировке в браузере.
+        fields:
+          api_key_hint:
+            title: API-ключ не нужен
+            description: Провайдер обращается к локальному HTTP-серверу Style-Bert-VITS2. Поле API-ключа выше не используется.
+          model:
+            label: Модель
+            description: Чекпоинт на сервере SBV2 (из GET /models/info).
+            placeholder: Выберите модель…
+          language:
+            label: Язык текста
+            description: JP / EN / ZH — должен совпадать с языком входного текста (параметр language сервера).
+        playground:
+          default-text: Здравствуйте. Это тест Style-Bert-VITS2.
+        connection_error:
+          title: Не удалось подключиться к серверу Style-Bert-VITS2
       perplexity:
         description: perplexity.ai
         title: Perplexity
