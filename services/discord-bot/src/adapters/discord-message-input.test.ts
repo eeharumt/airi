@@ -9,6 +9,7 @@ import {
 describe('discord-message-input', () => {
   it('accepts known message modes', () => {
     expect(isDiscordMessageMode('dm-or-mention')).toBe(true)
+    expect(isDiscordMessageMode('joined-voice-channel')).toBe(true)
     expect(isDiscordMessageMode('all-messages')).toBe(true)
     expect(isDiscordMessageMode('unknown')).toBe(false)
   })
@@ -41,6 +42,35 @@ describe('discord-message-input', () => {
       isMentioned: false,
       messageMode: 'all-messages',
     })).toBe(true)
+  })
+
+  it('only accepts messages tied to AIRI joined voice channel in joined-voice-channel mode', () => {
+    expect(shouldIngestDiscordMessage({
+      isDM: false,
+      isMentioned: false,
+      messageMode: 'joined-voice-channel',
+      joinedVoiceChannelId: 'voice-1',
+      memberVoiceChannelId: 'voice-1',
+      messageChannelId: 'text-1',
+    })).toBe(true)
+
+    expect(shouldIngestDiscordMessage({
+      isDM: false,
+      isMentioned: false,
+      messageMode: 'joined-voice-channel',
+      joinedVoiceChannelId: 'voice-1',
+      memberVoiceChannelId: 'voice-2',
+      messageChannelId: 'voice-1',
+    })).toBe(true)
+
+    expect(shouldIngestDiscordMessage({
+      isDM: false,
+      isMentioned: true,
+      messageMode: 'joined-voice-channel',
+      joinedVoiceChannelId: 'voice-1',
+      memberVoiceChannelId: 'voice-2',
+      messageChannelId: 'text-1',
+    })).toBe(false)
   })
 
   it('removes Discord mention markup before ingestion', () => {

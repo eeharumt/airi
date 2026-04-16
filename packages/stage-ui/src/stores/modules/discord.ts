@@ -4,7 +4,7 @@ import { computed } from 'vue'
 
 import { useConfiguratorByModsChannelServer } from '../configurator'
 
-export type DiscordMessageMode = 'dm-or-mention' | 'all-messages'
+export type DiscordMessageMode = 'dm-or-mention' | 'joined-voice-channel' | 'all-messages'
 
 export const useDiscordStore = defineStore('discord', () => {
   const configurator = useConfiguratorByModsChannelServer()

@@ -228,8 +228,29 @@ export class DiscordAdapter {
       const isDM = !message.guild
       const botUser = this.discordClient.user
       const isMentioned = !!botUser && message.mentions.has(botUser)
+      const joinedVoiceChannelId = message.guildId
+        ? this.voiceManager.getJoinedVoiceChannelId(message.guildId)
+        : undefined
+      let memberVoiceChannelId = message.member?.voice.channelId ?? undefined
 
-      if (shouldIngestDiscordMessage({ isDM, isMentioned, messageMode: this.messageMode })) {
+      if (!memberVoiceChannelId && this.messageMode === 'joined-voice-channel' && message.guild) {
+        try {
+          const member = await message.guild.members.fetch(message.author.id)
+          memberVoiceChannelId = member.voice.channelId ?? undefined
+        }
+        catch (error) {
+          log.withError(error as Error).warn('Failed to resolve Discord member voice state for chat ingestion.')
+        }
+      }
+
+      if (shouldIngestDiscordMessage({
+        isDM,
+        isMentioned,
+        messageMode: this.messageMode,
+        messageChannelId: message.channelId,
+        joinedVoiceChannelId,
+        memberVoiceChannelId,
+      })) {
         const rawContent = message.content
         const content = normalizeDiscordMessageContent(rawContent, isMentioned)
 

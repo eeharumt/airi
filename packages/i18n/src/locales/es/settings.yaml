@@ -464,11 +464,14 @@ pages:
       message-mode: Modo de entrada del chat
       message-mode-description: Elige qué mensajes de texto de Discord deben ingerirse como entrada para AIRI
       message-mode-placeholder: Selecciona un modo de entrada del chat
-      chat-input-note: Los mensajes directos siempre se tratan como entrada. Elige "Todos los mensajes" si también quieres reenviar los mensajes normales de los canales.
+      chat-input-note: Los mensajes directos siempre se tratan como entrada. Elige "Solo canal de voz unido" si quieres limitar la entrada del chat a miembros que estén en el mismo canal de voz que AIRI.
       message-mode-options:
         dm-or-mention:
           label: Solo MD o menciones
           description: Solo se ingieren como entrada los mensajes directos y los mensajes que mencionan al bot
+        joined-voice-channel:
+          label: Solo canal de voz unido
+          description: Solo ingiere mensajes de miembros que estén actualmente en el mismo canal de voz que AIRI
         all-messages:
           label: Todos los mensajes
           description: También ingiere mensajes normales de los canales que el bot puede leer

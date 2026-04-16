@@ -464,11 +464,14 @@ pages:
       message-mode: チャット入力モード
       message-mode-description: Discord テキストメッセージをどの条件で入力として取り込むかを選択します
       message-mode-placeholder: チャット入力モードを選択
-      chat-input-note: ダイレクトメッセージは常に入力として扱われます。通常チャンネルの発言も取り込みたい場合は「すべてのメッセージ」を選択してください。
+      chat-input-note: ダイレクトメッセージは常に入力として扱われます。AIRI が参加中のボイスチャンネルにいるメンバーだけを対象にしたい場合は「参加中のボイスチャンネルのみ」を選択してください。
       message-mode-options:
         dm-or-mention:
           label: DM またはメンションのみ
           description: ダイレクトメッセージ、または Bot へのメンション付きメッセージだけを入力として扱います
+        joined-voice-channel:
+          label: 参加中のボイスチャンネルのみ
+          description: AIRI が現在参加しているボイスチャンネルにいるメンバーのメッセージだけを入力として扱います
         all-messages:
           label: すべてのメッセージ
           description: Bot が閲覧できる通常チャンネル内のメッセージも入力として扱います

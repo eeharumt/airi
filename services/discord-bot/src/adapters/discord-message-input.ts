@@ -1,13 +1,18 @@
-export type DiscordMessageMode = 'dm-or-mention' | 'all-messages'
+export type DiscordMessageMode = 'dm-or-mention' | 'joined-voice-channel' | 'all-messages'
 
 export interface DiscordMessageRoutingOptions {
   isDM: boolean
   isMentioned: boolean
+  messageChannelId?: string
+  joinedVoiceChannelId?: string
+  memberVoiceChannelId?: string
   messageMode?: DiscordMessageMode
 }
 
 export function isDiscordMessageMode(value: unknown): value is DiscordMessageMode {
-  return value === 'dm-or-mention' || value === 'all-messages'
+  return value === 'dm-or-mention'
+    || value === 'joined-voice-channel'
+    || value === 'all-messages'
 }
 
 export function shouldIngestDiscordMessage(options: DiscordMessageRoutingOptions): boolean {
@@ -16,6 +21,14 @@ export function shouldIngestDiscordMessage(options: DiscordMessageRoutingOptions
 
   if (options.messageMode === 'all-messages')
     return true
+
+  if (options.messageMode === 'joined-voice-channel') {
+    if (!options.joinedVoiceChannelId)
+      return false
+
+    return options.memberVoiceChannelId === options.joinedVoiceChannelId
+      || options.messageChannelId === options.joinedVoiceChannelId
+  }
 
   return options.isMentioned
 }

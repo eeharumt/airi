@@ -23,6 +23,11 @@ const messageModeOptions = computed<Array<{
     value: 'dm-or-mention',
   },
   {
+    label: t('settings.pages.modules.messaging-discord.message-mode-options.joined-voice-channel.label'),
+    description: t('settings.pages.modules.messaging-discord.message-mode-options.joined-voice-channel.description'),
+    value: 'joined-voice-channel',
+  },
+  {
     label: t('settings.pages.modules.messaging-discord.message-mode-options.all-messages.label'),
     description: t('settings.pages.modules.messaging-discord.message-mode-options.all-messages.description'),
     value: 'all-messages',

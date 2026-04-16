@@ -236,6 +236,13 @@ export class VoiceManager extends EventEmitter {
     return connection
   }
 
+  getJoinedVoiceChannelId(guildId: string): string | undefined {
+    const connection = this.getVoiceConnection(guildId)
+    const channelId = connection?.joinConfig.channelId
+
+    return typeof channelId === 'string' ? channelId : undefined
+  }
+
   private async monitorMember(
     member: GuildMember,
     channelId: string,

@@ -464,11 +464,14 @@ pages:
       message-mode: 聊天輸入模式
       message-mode-description: 選擇哪些 Discord 文字訊息應作為 AIRI 的輸入
       message-mode-placeholder: 選擇聊天輸入模式
-      chat-input-note: 私訊永遠會作為輸入處理。如果也想接收一般頻道訊息，請選擇「所有訊息」。
+      chat-input-note: 私訊永遠會作為輸入處理。如果想把聊天輸入限制在目前與 AIRI 位於同一語音頻道的成員，請選擇「僅目前語音頻道」。
       message-mode-options:
         dm-or-mention:
           label: 僅私訊或提及
           description: 只有私訊與提及 Bot 的訊息會作為輸入
+        joined-voice-channel:
+          label: 僅目前語音頻道
+          description: 只接收目前與 AIRI 位於同一語音頻道成員傳送的訊息
         all-messages:
           label: 所有訊息
           description: 也會接收 Bot 可讀取頻道中的一般訊息
