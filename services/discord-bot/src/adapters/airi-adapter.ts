@@ -1,6 +1,8 @@
 import type { Discord } from '@proj-airi/server-shared/types'
 import type { Interaction } from 'discord.js'
 
+import type { DiscordMessageMode } from './discord-message-input'
+
 import { env } from 'node:process'
 
 import { useLogg } from '@guiiai/logg'
@@ -10,10 +12,10 @@ import { Client, Events, GatewayIntentBits, Partials } from 'discord.js'
 
 import { handlePing, registerCommands, VoiceManager } from '../bots/discord/commands'
 import {
+
   isDiscordMessageMode,
   normalizeDiscordMessageContent,
   shouldIngestDiscordMessage,
-  type DiscordMessageMode,
 } from './discord-message-input'
 
 const log = useLogg('DiscordAdapter').useGlobalConfig()

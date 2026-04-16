@@ -16,7 +16,8 @@
   },
   "scripts": {
     "start": "tsx --env-file=.env --env-file-if-exists=.env.local src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config vitest.config.ts"
   },
   "dependencies": {
     "@discordjs/voice": "^0.19.2",

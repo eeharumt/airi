@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { DiscordMessageMode } from '../../stores/modules/discord'
+
 import { Button, FieldCheckbox, FieldInput, FieldSelect } from '@proj-airi/ui'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
@@ -10,7 +12,11 @@ const { t } = useI18n()
 const discordStore = useDiscordStore()
 const { enabled, token, messageMode, configured } = storeToRefs(discordStore)
 
-const messageModeOptions = computed(() => [
+const messageModeOptions = computed<Array<{
+  label: string
+  description: string
+  value: DiscordMessageMode
+}>>(() => [
   {
     label: t('settings.pages.modules.messaging-discord.message-mode-options.dm-or-mention.label'),
     description: t('settings.pages.modules.messaging-discord.message-mode-options.dm-or-mention.description'),
@@ -21,7 +27,7 @@ const messageModeOptions = computed(() => [
     description: t('settings.pages.modules.messaging-discord.message-mode-options.all-messages.description'),
     value: 'all-messages',
   },
-] as const)
+])
 
 function saveSettings() {
   discordStore.saveSettings()
