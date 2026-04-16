@@ -461,6 +461,17 @@ pages:
       token: Токен бота
       token-description: Ваш токен бота Discord
       token-placeholder: Введите токен бота Discord
+      message-mode: Режим входящих сообщений
+      message-mode-description: Выберите, какие текстовые сообщения Discord следует принимать как ввод для AIRI
+      message-mode-placeholder: Выберите режим входящих сообщений
+      chat-input-note: Личные сообщения всегда принимаются как ввод. Выберите «Все сообщения», если хотите также пересылать обычные сообщения из каналов.
+      message-mode-options:
+        dm-or-mention:
+          label: Только ЛС или упоминания
+          description: Как ввод принимаются только личные сообщения и сообщения с упоминанием бота
+        all-messages:
+          label: Все сообщения
+          description: Также принимать обычные сообщения из каналов, которые бот может читать
       configured: Discord настроен правильно!
     speech:
       description: Синтез речи

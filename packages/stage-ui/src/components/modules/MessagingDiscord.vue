@@ -1,13 +1,27 @@
 <script setup lang="ts">
-import { Button, FieldCheckbox, FieldInput } from '@proj-airi/ui'
+import { Button, FieldCheckbox, FieldInput, FieldSelect } from '@proj-airi/ui'
 import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { useDiscordStore } from '../../stores/modules/discord'
 
 const { t } = useI18n()
 const discordStore = useDiscordStore()
-const { enabled, token, configured } = storeToRefs(discordStore)
+const { enabled, token, messageMode, configured } = storeToRefs(discordStore)
+
+const messageModeOptions = computed(() => [
+  {
+    label: t('settings.pages.modules.messaging-discord.message-mode-options.dm-or-mention.label'),
+    description: t('settings.pages.modules.messaging-discord.message-mode-options.dm-or-mention.description'),
+    value: 'dm-or-mention',
+  },
+  {
+    label: t('settings.pages.modules.messaging-discord.message-mode-options.all-messages.label'),
+    description: t('settings.pages.modules.messaging-discord.message-mode-options.all-messages.description'),
+    value: 'all-messages',
+  },
+] as const)
 
 function saveSettings() {
   discordStore.saveSettings()
@@ -15,7 +29,7 @@ function saveSettings() {
 </script>
 
 <template>
-  <div flex="~ col gap-6">
+  <div :class="['flex', 'flex-col', 'gap-6']">
     <FieldCheckbox
       v-model="enabled"
       :label="t('settings.pages.modules.messaging-discord.enable')"
@@ -30,6 +44,18 @@ function saveSettings() {
       :placeholder="t('settings.pages.modules.messaging-discord.token-placeholder')"
     />
 
+    <FieldSelect
+      v-model="messageMode"
+      :label="t('settings.pages.modules.messaging-discord.message-mode')"
+      :description="t('settings.pages.modules.messaging-discord.message-mode-description')"
+      :placeholder="t('settings.pages.modules.messaging-discord.message-mode-placeholder')"
+      :options="messageModeOptions"
+    />
+
+    <div :class="['text-xs', 'text-neutral-500', 'dark:text-neutral-400']">
+      {{ t('settings.pages.modules.messaging-discord.chat-input-note') }}
+    </div>
+
     <div>
       <Button
         :label="t('settings.common.save')"
@@ -38,7 +64,10 @@ function saveSettings() {
       />
     </div>
 
-    <div v-if="configured" class="mt-4 rounded-lg bg-green-100 p-4 text-green-800">
+    <div
+      v-if="configured"
+      :class="['mt-4', 'rounded-lg', 'bg-green-100', 'p-4', 'text-green-800', 'dark:bg-green-950/40', 'dark:text-green-200']"
+    >
       {{ t('settings.pages.modules.messaging-discord.configured') }}
     </div>
   </div>

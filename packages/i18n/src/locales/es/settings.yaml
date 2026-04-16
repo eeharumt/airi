@@ -461,6 +461,17 @@ pages:
       token: Token del bot
       token-description: Su token de bot de Discord
       token-placeholder: Ingrese su token de bot de Discord
+      message-mode: Modo de entrada del chat
+      message-mode-description: Elige qué mensajes de texto de Discord deben ingerirse como entrada para AIRI
+      message-mode-placeholder: Selecciona un modo de entrada del chat
+      chat-input-note: Los mensajes directos siempre se tratan como entrada. Elige "Todos los mensajes" si también quieres reenviar los mensajes normales de los canales.
+      message-mode-options:
+        dm-or-mention:
+          label: Solo MD o menciones
+          description: Solo se ingieren como entrada los mensajes directos y los mensajes que mencionan al bot
+        all-messages:
+          label: Todos los mensajes
+          description: También ingiere mensajes normales de los canales que el bot puede leer
       configured: '¡Discord está configurado correctamente!'
     speech:
       description: Síntesis de voz

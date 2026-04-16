@@ -1,6 +1,6 @@
 # `discord-bot`
 
-Allow アイリ to talk to you and many other users in Discord voice channels.
+Allow AIRI to receive Discord text and voice input, then send the response back to Discord.
 
 ## Getting started
 
@@ -9,20 +9,17 @@ git clone git@github.com:moeru-ai/airi.git
 pnpm i
 ```
 
-In [Discord Developer Portal](https://discord.com/developers/home), create a new application and this will be the bot
-you will add to your server.
+Create a bot application in the [Discord Developer Portal](https://discord.com/developers/home), then invite it to your server.
 
-In the **"Bot"** tab, find "Privileged Gateway Intents" section, toggle on the following intents:
+In the **Bot** tab, enable these intents:
 
-- **"Server Members Intent"**
-- **"Message Content Intent"**
+- **Server Members Intent**
+- **Message Content Intent**
 
-Now look above the "Privileged Gateway Intents" section, you will find the "Token" section,
-for newly created bots, click "Reset Token" to generate a new token, and copy the token for later use.
+Copy the bot token from the **Token** section for later use.
 
 > [!NOTE]
-> If you ever forgot the token or lost it, you can always click "Reset Token" to generate a new token,
-> but remember to update the token in your `.env.local` file, or configure through the UI as well.
+> You can provide the bot token either through `.env.local` or from the AIRI settings UI. If you reset the token in Discord, update the saved configuration as well.
 
 Create a `.env.local` file:
 
@@ -31,23 +28,28 @@ cd services/discord-bot
 cp .env .env.local
 ```
 
-Fill-in the following credentials as configurations:
+Set the runtime configuration:
 
 ```shell
 DISCORD_TOKEN=''
-DISCORD_BOT_CLIENT_ID=''
-
-OPENAI_MODEL=''
-OPENAI_API_KEY=''
-OPENAI_API_BASE_URL=''
-
-ELEVENLABS_API_KEY=''
-ELEVENLABS_API_BASE_URL=''
+AIRI_TOKEN='abcd'
+AIRI_URL='ws://localhost:6121/ws'
 ```
+
+Start the Discord bridge:
 
 ```shell
-pnpm run -F @proj-airi/discord-bot start
+pnpm -F @proj-airi/discord-bot start
 ```
+
+## Text input behavior
+
+After the bot is connected and enabled from AIRI Settings -> Modules -> Discord:
+
+- **DMs or mentions only**: default mode; direct messages and messages that mention the bot become AIRI input.
+- **All messages**: every readable text message in a channel becomes AIRI input.
+
+Direct messages are always accepted as input.
 
 ## Other similar projects
 

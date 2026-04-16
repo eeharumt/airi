@@ -15,13 +15,24 @@ Configure `.env`
 cp .env .env.local
 ```
 
-Edit the credentials in `.env.local`.
+Edit the runtime configuration in `.env.local`.
+
+```shell
+DISCORD_TOKEN=''
+AIRI_TOKEN='abcd'
+AIRI_URL='ws://localhost:6121/ws'
+```
 
 Run the bot
 
 ```shell
 pnpm -F @proj-airi/discord-bot start
 ```
+
+Then open AIRI Settings -> Modules -> Discord, enable the integration, save the token, and choose the chat input mode:
+
+- **DMs or mentions only**: ingest DMs and messages that mention the bot
+- **All messages**: ingest every readable text message in a channel
 
 ::: tip
 

@@ -461,6 +461,17 @@ pages:
       token: Mã token của bot
       token-description: Mã token bot Discord của bạn
       token-placeholder: Nhập mã token bot Discord của bạn
+      message-mode: Chế độ nhận đầu vào chat
+      message-mode-description: Chọn những tin nhắn văn bản Discord nào sẽ được dùng làm đầu vào cho AIRI
+      message-mode-placeholder: Chọn chế độ nhận đầu vào chat
+      chat-input-note: Tin nhắn trực tiếp luôn được dùng làm đầu vào. Chọn "Tất cả tin nhắn" nếu bạn cũng muốn nhận các tin nhắn trong kênh thông thường.
+      message-mode-options:
+        dm-or-mention:
+          label: Chỉ DM hoặc nhắc tên
+          description: Chỉ nhận tin nhắn trực tiếp và tin nhắn có nhắc bot làm đầu vào
+        all-messages:
+          label: Tất cả tin nhắn
+          description: Cũng nhận các tin nhắn thông thường từ những kênh mà bot có thể đọc
       configured: Đã cấu hình Discord thành công!
     speech:
       description: Tổng hợp giọng nói

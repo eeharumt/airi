@@ -461,6 +461,17 @@ pages:
       token: 機器人權杖
       token-description: 您的 Discord 機器人权杖
       token-placeholder: 輸入您的 Discord 機器人权杖
+      message-mode: 聊天輸入模式
+      message-mode-description: 選擇哪些 Discord 文字訊息應作為 AIRI 的輸入
+      message-mode-placeholder: 選擇聊天輸入模式
+      chat-input-note: 私訊永遠會作為輸入處理。如果也想接收一般頻道訊息，請選擇「所有訊息」。
+      message-mode-options:
+        dm-or-mention:
+          label: 僅私訊或提及
+          description: 只有私訊與提及 Bot 的訊息會作為輸入
+        all-messages:
+          label: 所有訊息
+          description: 也會接收 Bot 可讀取頻道中的一般訊息
       configured: Discord 已正確設定！
     speech:
       description: 語音合成

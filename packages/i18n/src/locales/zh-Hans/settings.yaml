@@ -461,6 +461,17 @@ pages:
       token: 机器人令牌
       token-description: 您的Discord机器人令牌
       token-placeholder: 输入您的Discord机器人令牌
+      message-mode: 聊天输入模式
+      message-mode-description: 选择哪些 Discord 文本消息应作为 AIRI 的输入
+      message-mode-placeholder: 选择聊天输入模式
+      chat-input-note: 私信始终会作为输入处理。如果你也想接收普通频道消息，请选择“所有消息”。
+      message-mode-options:
+        dm-or-mention:
+          label: 仅私信或提及
+          description: 只有私信和提及 Bot 的消息会被当作输入
+        all-messages:
+          label: 所有消息
+          description: 也接收 Bot 可读取频道中的普通消息
       configured: Discord已正确配置！
     speech:
       description: 语音合成

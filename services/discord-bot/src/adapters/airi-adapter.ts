@@ -9,6 +9,12 @@ import { ContextUpdateStrategy } from '@proj-airi/server-shared/types'
 import { Client, Events, GatewayIntentBits, Partials } from 'discord.js'
 
 import { handlePing, registerCommands, VoiceManager } from '../bots/discord/commands'
+import {
+  isDiscordMessageMode,
+  normalizeDiscordMessageContent,
+  shouldIngestDiscordMessage,
+  type DiscordMessageMode,
+} from './discord-message-input'
 
 const log = useLogg('DiscordAdapter').useGlobalConfig()
 
@@ -22,6 +28,7 @@ export interface DiscordAdapterConfig {
 interface DiscordConfig {
   token?: string
   enabled?: boolean
+  messageMode?: DiscordMessageMode
 }
 
 // Type guard to safely validate the configuration object
@@ -31,6 +38,7 @@ function isDiscordConfig(config: unknown): config is DiscordConfig {
   const c = config as Record<string, unknown>
   return (typeof c.token === 'string' || typeof c.token === 'undefined')
     && (typeof c.enabled === 'boolean' || typeof c.enabled === 'undefined')
+    && (isDiscordMessageMode(c.messageMode) || typeof c.messageMode === 'undefined')
 }
 
 function normalizeDiscordMetadata(discord?: Discord): Discord | undefined {
@@ -56,11 +64,13 @@ export class DiscordAdapter {
   private airiClient: ServerChannel
   private discordClient: Client
   private discordToken: string
+  private messageMode: DiscordMessageMode
   private voiceManager: VoiceManager
   private isReconnecting = false
 
   constructor(config: DiscordAdapterConfig) {
     this.discordToken = config.discordToken || env.DISCORD_TOKEN || ''
+    this.messageMode = 'dm-or-mention'
 
     // Initialize Discord client
     this.discordClient = new Client({
@@ -107,6 +117,7 @@ export class DiscordAdapter {
         if (isDiscordConfig(event.data.config)) {
           const config = event.data.config as DiscordConfig
           const { token, enabled } = config
+          this.messageMode = config.messageMode ?? 'dm-or-mention'
 
           if (enabled === false) {
             if (this.discordClient.isReady) {
@@ -213,14 +224,12 @@ export class DiscordAdapter {
         return
 
       const isDM = !message.guild
-      const isMentioned = this.discordClient.user && message.mentions.has(this.discordClient.user)
+      const botUser = this.discordClient.user
+      const isMentioned = !!botUser && message.mentions.has(botUser)
 
-      // Respond if the bot is mentioned OR if it's a DM
-      if (isMentioned || isDM) {
+      if (shouldIngestDiscordMessage({ isDM, isMentioned, messageMode: this.messageMode })) {
         const rawContent = message.content
-        const content = isMentioned
-          ? rawContent.replace(/<@!?\d+>/g, '').trim()
-          : rawContent.trim()
+        const content = normalizeDiscordMessageContent(rawContent, isMentioned)
 
         if (!content)
           return

@@ -461,6 +461,17 @@ pages:
       token: Jeton du bot
       token-description: Votre jeton de bot Discord
       token-placeholder: Entrez votre jeton de bot Discord
+      message-mode: Mode d'entrée du chat
+      message-mode-description: Choisissez quels messages texte Discord doivent être ingérés comme entrée AIRI
+      message-mode-placeholder: Sélectionnez un mode d'entrée du chat
+      chat-input-note: Les messages privés sont toujours ingérés comme entrée. Choisissez « Tous les messages » si vous souhaitez aussi transférer les messages de salon ordinaires.
+      message-mode-options:
+        dm-or-mention:
+          label: MP ou mentions uniquement
+          description: Seuls les messages privés et les messages qui mentionnent le bot sont ingérés comme entrée
+        all-messages:
+          label: Tous les messages
+          description: Ingère aussi les messages ordinaires des salons que le bot peut lire
       configured: Discord est correctement configuré !
     speech:
       description: Synthèse vocale

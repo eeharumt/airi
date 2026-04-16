@@ -4,10 +4,13 @@ import { computed } from 'vue'
 
 import { useConfiguratorByModsChannelServer } from '../configurator'
 
+export type DiscordMessageMode = 'dm-or-mention' | 'all-messages'
+
 export const useDiscordStore = defineStore('discord', () => {
   const configurator = useConfiguratorByModsChannelServer()
   const enabled = useLocalStorageManualReset<boolean>('settings/discord/enabled', false)
   const token = useLocalStorageManualReset<string>('settings/discord/token', '')
+  const messageMode = useLocalStorageManualReset<DiscordMessageMode>('settings/discord/message-mode', 'dm-or-mention')
 
   function saveSettings() {
     // Data is automatically saved to localStorage via useLocalStorage
@@ -15,6 +18,7 @@ export const useDiscordStore = defineStore('discord', () => {
     configurator.updateFor('discord', {
       token: token.value,
       enabled: enabled.value,
+      messageMode: messageMode.value,
     })
   }
 
@@ -25,12 +29,14 @@ export const useDiscordStore = defineStore('discord', () => {
   function resetState() {
     enabled.reset()
     token.reset()
+    messageMode.reset()
     saveSettings()
   }
 
   return {
     enabled,
     token,
+    messageMode,
     configured,
     saveSettings,
     resetState,

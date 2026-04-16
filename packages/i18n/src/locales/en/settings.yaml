@@ -487,6 +487,17 @@ pages:
       token: Bot Token
       token-description: Your Discord bot token
       token-placeholder: Enter your Discord bot token
+      message-mode: Chat Input Mode
+      message-mode-description: Choose which Discord text messages should be ingested as AIRI input
+      message-mode-placeholder: Select a chat input mode
+      chat-input-note: Direct messages are always ingested as input. Choose "All messages" if you also want regular channel messages to be forwarded.
+      message-mode-options:
+        dm-or-mention:
+          label: DMs or mentions only
+          description: Only direct messages and messages that mention the bot are ingested as input
+        all-messages:
+          label: All messages
+          description: Also ingest regular messages from channels that the bot can read
       configured: Discord is properly configured!
     speech:
       description: Speech synthesis
