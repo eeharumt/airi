@@ -247,7 +247,6 @@ export class DiscordAdapter {
         isDM,
         isMentioned,
         messageMode: this.messageMode,
-        messageChannelId: message.channelId,
         joinedVoiceChannelId,
         memberVoiceChannelId,
       })) {

@@ -14,7 +14,7 @@ describe('discord-message-input', () => {
     expect(isDiscordMessageMode('unknown')).toBe(false)
   })
 
-  it('always ingests direct messages', () => {
+  it('keeps ingesting direct messages in the legacy mode', () => {
     expect(shouldIngestDiscordMessage({
       isDM: true,
       isMentioned: false,
@@ -51,7 +51,6 @@ describe('discord-message-input', () => {
       messageMode: 'joined-voice-channel',
       joinedVoiceChannelId: 'voice-1',
       memberVoiceChannelId: 'voice-1',
-      messageChannelId: 'text-1',
     })).toBe(true)
 
     expect(shouldIngestDiscordMessage({
@@ -60,8 +59,7 @@ describe('discord-message-input', () => {
       messageMode: 'joined-voice-channel',
       joinedVoiceChannelId: 'voice-1',
       memberVoiceChannelId: 'voice-2',
-      messageChannelId: 'voice-1',
-    })).toBe(true)
+    })).toBe(false)
 
     expect(shouldIngestDiscordMessage({
       isDM: false,
@@ -69,7 +67,13 @@ describe('discord-message-input', () => {
       messageMode: 'joined-voice-channel',
       joinedVoiceChannelId: 'voice-1',
       memberVoiceChannelId: 'voice-2',
-      messageChannelId: 'text-1',
+    })).toBe(false)
+
+    expect(shouldIngestDiscordMessage({
+      isDM: true,
+      isMentioned: false,
+      messageMode: 'joined-voice-channel',
+      joinedVoiceChannelId: 'voice-1',
     })).toBe(false)
   })
 

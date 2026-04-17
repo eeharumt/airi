@@ -47,10 +47,10 @@ pnpm -F @proj-airi/discord-bot start
 After the bot is connected and enabled from AIRI Settings -> Modules -> Discord:
 
 - **DMs or mentions only**: default mode; direct messages and messages that mention the bot become AIRI input.
-- **Joined voice channel only**: only messages from members who are currently in the same voice channel as AIRI become AIRI input.
+- **Joined voice channel only**: only regular channel messages from members who are currently in the same voice channel as AIRI become AIRI input.
 - **All messages**: every readable text message in a channel becomes AIRI input.
 
-Direct messages are always accepted as input.
+In **Joined voice channel only** mode, AIRI does not react to DMs or mentions.
 
 ## Other similar projects
 

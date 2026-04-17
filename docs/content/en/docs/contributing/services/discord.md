@@ -32,7 +32,7 @@ pnpm -F @proj-airi/discord-bot start
 Then open AIRI Settings -> Modules -> Discord, enable the integration, save the token, and choose the chat input mode:
 
 - **DMs or mentions only**: ingest DMs and messages that mention the bot
-- **Joined voice channel only**: ingest messages from members who are currently in the same voice channel as AIRI
+- **Joined voice channel only**: ingest regular channel messages from members who are currently in the same voice channel as AIRI; DMs and mentions are ignored in this mode
 - **All messages**: ingest every readable text message in a channel
 
 ::: tip
