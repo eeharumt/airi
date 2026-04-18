@@ -10,9 +10,9 @@ import type { AllocationToken } from '../gpu-resource-coordinator'
 import type { ProgressPayload } from '../protocol'
 
 import { defaultPerfTracer } from '@proj-airi/stage-shared'
+import { Mutex } from 'async-mutex'
 
 import { removeInferenceStatus, updateInferenceStatus } from '../../../composables/use-inference-status'
-import { AsyncMutex } from '../async-mutex'
 import { MAX_RESTARTS, MODEL_NAMES, RESTART_DELAY_MS, TIMEOUTS } from '../constants'
 import { getGPUCoordinator, getLoadQueue, MODEL_VRAM_ESTIMATES } from '../coordinator'
 import { LOAD_PRIORITY } from '../load-queue'
@@ -82,23 +82,27 @@ export function createWhisperAdapter(workerUrl: string | URL): WhisperAdapter {
   let state: WhisperState = 'idle'
   let allocationToken: AllocationToken | null = null
   let restartAttempts = 0
+  let messageListener: ((event: MessageEvent) => void) | null = null
+  let errorListener: ((event: ErrorEvent) => void) | null = null
   const messageHandlers = new Set<(event: WhisperEvent) => void>()
 
-  const operationMutex = new AsyncMutex()
+  const operationMutex = new Mutex()
 
-  function handleWorkerError(event: ErrorEvent | Error): void {
-    const message = event instanceof Error
-      ? event.message
-      : (event as ErrorEvent).message ?? 'Unknown worker error'
-
+  function handleWorkerError(_event: ErrorEvent | Error): void {
     state = 'error'
-    operationMutex.reset(new Error(message))
+    operationMutex.cancel()
     destroyWorker()
     scheduleRestart()
   }
 
   function destroyWorker(): void {
     if (worker) {
+      if (messageListener)
+        worker.removeEventListener('message', messageListener)
+      if (errorListener)
+        worker.removeEventListener('error', errorListener)
+      messageListener = null
+      errorListener = null
       worker.terminate()
       worker = null
     }
@@ -107,6 +111,9 @@ export function createWhisperAdapter(workerUrl: string | URL): WhisperAdapter {
   function scheduleRestart(): void {
     if (restartAttempts >= MAX_RESTARTS) {
       console.error(`[WhisperAdapter] Max restart attempts (${MAX_RESTARTS}) reached.`)
+      // NOTICE: Transition to 'terminated' so callers can detect the dead adapter
+      // instead of being stuck in 'error' state indefinitely.
+      state = 'terminated'
       return
     }
 
@@ -126,7 +133,7 @@ export function createWhisperAdapter(workerUrl: string | URL): WhisperAdapter {
   function ensureWorker(): Worker {
     if (!worker) {
       worker = new Worker(workerUrl, { type: 'module' })
-      worker.addEventListener('message', (event: MessageEvent) => {
+      messageListener = (event: MessageEvent) => {
         const data = event.data
         // Forward unified protocol messages to subscribers
         if (data.type === 'progress') {
@@ -145,10 +152,12 @@ export function createWhisperAdapter(workerUrl: string | URL): WhisperAdapter {
           const evt: WhisperEvent = { type: 'error', payload: data.payload }
           for (const handler of messageHandlers) handler(evt)
         }
-      })
-      worker.addEventListener('error', (event) => {
+      }
+      errorListener = (event: ErrorEvent) => {
         handleWorkerError(event)
-      })
+      }
+      worker.addEventListener('message', messageListener)
+      worker.addEventListener('error', errorListener)
     }
     return worker
   }
@@ -199,7 +208,7 @@ export function createWhisperAdapter(workerUrl: string | URL): WhisperAdapter {
   async function load(
     onProgress?: (p: ProgressPayload) => void,
   ): Promise<void> {
-    return operationMutex.run(async () => {
+    return operationMutex.runExclusive(async () => {
       state = 'loading'
       updateInferenceStatus(MODEL_NAMES.WHISPER, { state: 'downloading', device: 'webgpu' })
 
@@ -253,7 +262,7 @@ export function createWhisperAdapter(workerUrl: string | URL): WhisperAdapter {
   }
 
   async function transcribe(input: WhisperTranscribeInput): Promise<string> {
-    return defaultPerfTracer.withMeasure('inference', 'whisper-transcribe', () => operationMutex.run(async () => {
+    return defaultPerfTracer.withMeasure('inference', 'whisper-transcribe', () => operationMutex.runExclusive(async () => {
       if (!worker || state !== 'ready')
         throw new Error('Model not loaded. Call load() first.')
 
@@ -286,11 +295,8 @@ export function createWhisperAdapter(workerUrl: string | URL): WhisperAdapter {
   }
 
   function terminateAdapter(): void {
-    operationMutex.reset(new Error('Adapter terminated'))
-    if (worker) {
-      worker.terminate()
-      worker = null
-    }
+    operationMutex.cancel()
+    destroyWorker()
     if (allocationToken) {
       removeInferenceStatus(MODEL_NAMES.WHISPER)
       getGPUCoordinator().release(allocationToken)
