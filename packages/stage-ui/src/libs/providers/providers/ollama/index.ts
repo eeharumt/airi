@@ -23,6 +23,11 @@ function isGptOssModel(model: string): boolean {
   return model.toLowerCase().includes('gpt-oss')
 }
 
+/** Gemma family: omitting `think` on Ollama can default to thinking on; use explicit `false` in auto mode. */
+function isGemmaFamilyModel(model: string): boolean {
+  return model.toLowerCase().includes('gemma')
+}
+
 function normalizeOllamaThinkingMode(value: unknown): OllamaThinkingMode {
   switch (value) {
     case 'auto':
@@ -43,7 +48,7 @@ export function resolveOllamaThink(model: string, modeRaw: unknown): OllamaThink
 
   switch (mode) {
     case 'auto':
-      return undefined
+      return isGemmaFamilyModel(model) ? false : undefined
     case 'disable':
       // NOTICE: GPT-OSS ignores boolean `think`, so "disable" degrades to `low`.
       return isGptOss ? 'low' : false

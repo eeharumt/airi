@@ -3,8 +3,14 @@ import { describe, expect, it } from 'vitest'
 import { providerOllama, resolveOllamaThink } from './index'
 
 describe('providerOllama.resolveOllamaThink', () => {
-  it('should return undefined for auto mode', () => {
+  it('should return undefined for auto mode on non-Gemma models', () => {
     expect(resolveOllamaThink('qwen3:8b', 'auto')).toBeUndefined()
+  })
+
+  it('should return false for auto mode on Gemma family models', () => {
+    expect(resolveOllamaThink('gemma4:latest', 'auto')).toBe(false)
+    expect(resolveOllamaThink('gemma3:12b', 'auto')).toBe(false)
+    expect(resolveOllamaThink('google/gemma2:9b', 'auto')).toBe(false)
   })
 
   it('should map disable/enable to booleans for non gpt-oss models', () => {
@@ -29,7 +35,7 @@ describe('providerOllama.resolveOllamaThink', () => {
 })
 
 describe('providerOllama.createProvider chat options', () => {
-  it('should not set think when thinkingMode is auto', () => {
+  it('should not set think when thinkingMode is auto on non-Gemma models', () => {
     const provider = providerOllama.createProvider({
       baseUrl: 'http://localhost:11434/v1/',
       thinkingMode: 'auto',
@@ -37,6 +43,16 @@ describe('providerOllama.createProvider chat options', () => {
 
     const chatOptions = provider.chat('qwen3:8b') as Record<string, unknown>
     expect('think' in chatOptions).toBe(false)
+  })
+
+  it('should set think=false when thinkingMode is auto on Gemma models', () => {
+    const provider = providerOllama.createProvider({
+      baseUrl: 'http://localhost:11434/v1/',
+      thinkingMode: 'auto',
+    }) as any
+
+    const chatOptions = provider.chat('gemma4:latest') as Record<string, unknown>
+    expect(chatOptions.think).toBe(false)
   })
 
   it('should set think=false for non gpt-oss when thinkingMode is disable', () => {
