@@ -1,8 +1,8 @@
 # `@proj-airi/discord-companion`
 
 A fresh Discord companion service that lets アイリ listen to a Discord voice
-channel and chat with members both through the voice channel's attached text
-chat and any additional text channels you configure.
+channel and chat with members through the voice channel's attached text chat
+only (no extra text channels or DMs).
 
 This package is a clean rewrite that lives alongside
 [`services/discord-bot`](../discord-bot). The legacy service is kept for
@@ -16,8 +16,9 @@ unwind, so we opted for a new, smaller, functional codebase here.
   OpenAI-compatible STT endpoint (e.g. the bundled `services/stt-faster-whisper`).
 - Forwards the transcription to AIRI as `input:text:voice` and `input:text`
   events.
-- Forwards incoming Discord text messages (voice-attached chat, configured
-  channels, or DMs) to AIRI as `input:text` events.
+- Forwards incoming Discord text messages from the voice-attached text channel
+  only (while the bot is connected to that guild's voice session) to AIRI as
+  `input:text` events.
 - Sends AIRI's `output:gen-ai:chat:message` responses back to the originating
   Discord channel, chunked for Discord's 2000-character limit.
 - Supports remote configuration via AIRI's `module:configure` protocol event
@@ -52,8 +53,6 @@ Environment variables:
 | `DISCORD_COMPANION_CLIENT_ID` | Application client id. Optional; derived from the bot user when missing. |
 | `AIRI_URL` | AIRI server WebSocket URL (default `ws://localhost:6121/ws`). |
 | `AIRI_TOKEN` | AIRI channel auth token. |
-| `DISCORD_COMPANION_TEXT_CHANNEL_IDS` | Comma-separated extra text channel IDs to listen on. |
-| `DISCORD_COMPANION_TEXT_MENTION_ONLY` | `true` (default) forwards only mentions/DMs in listened channels. |
 | `DISCORD_COMPANION_AUTO_JOIN` | `guildId:channelId` to auto-join a voice channel on ready. |
 | `OPENAI_STT_API_BASE_URL` | OpenAI-compatible transcription base URL. |
 | `OPENAI_STT_API_KEY` | API key (any non-empty value for local servers). |

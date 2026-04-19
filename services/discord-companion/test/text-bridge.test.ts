@@ -54,8 +54,6 @@ describe('createTextBridge', () => {
     const bridge = createTextBridge({
       airi,
       getAttachedTextChannelId: () => undefined,
-      getExtraChannelIds: () => [],
-      isMentionOnly: () => true,
       getSelfUserId: () => 'self',
     })
 
@@ -67,13 +65,11 @@ describe('createTextBridge', () => {
     expect(airi.sent).toHaveLength(0)
   })
 
-  it('forwards DMs even when mention-only is enabled', () => {
+  it('does not forward DMs', () => {
     const airi = makeAiriChannel()
     const bridge = createTextBridge({
       airi,
       getAttachedTextChannelId: () => undefined,
-      getExtraChannelIds: () => [],
-      isMentionOnly: () => true,
       getSelfUserId: () => 'self',
     })
 
@@ -83,17 +79,15 @@ describe('createTextBridge', () => {
       guild: null,
     }) as never)
 
-    expect(forwarded).toBe(true)
-    expect(airi.sent[0]).toMatchObject({ kind: 'text', text: 'こんにちは' })
+    expect(forwarded).toBe(false)
+    expect(airi.sent).toHaveLength(0)
   })
 
-  it('does not forward guild messages without mention when mention-only is true', () => {
+  it('forwards messages in the voice-attached text channel without requiring a mention', () => {
     const airi = makeAiriChannel()
     const bridge = createTextBridge({
       airi,
       getAttachedTextChannelId: () => 'voice-1',
-      getExtraChannelIds: () => [],
-      isMentionOnly: () => true,
       getSelfUserId: () => 'self',
     })
 
@@ -103,28 +97,26 @@ describe('createTextBridge', () => {
       guildId: 'g1',
     }) as never)
 
-    expect(forwarded).toBe(false)
-    expect(airi.sent).toHaveLength(0)
+    expect(forwarded).toBe(true)
+    expect(airi.sent[0]).toMatchObject({ kind: 'text', text: 'hi' })
   })
 
-  it('forwards voice-attached channel messages when mention-only is disabled', () => {
+  it('ignores guild messages when not in the voice-attached channel', () => {
     const airi = makeAiriChannel()
     const bridge = createTextBridge({
       airi,
       getAttachedTextChannelId: () => 'voice-1',
-      getExtraChannelIds: () => [],
-      isMentionOnly: () => false,
       getSelfUserId: () => 'self',
     })
 
     const forwarded = bridge.handleMessage(makeMessage({
-      content: 'general chatter',
-      channelId: 'voice-1',
+      content: 'wrong channel',
+      channelId: 'other',
       guildId: 'g1',
     }) as never)
 
-    expect(forwarded).toBe(true)
-    expect(airi.sent[0].text).toBe('general chatter')
+    expect(forwarded).toBe(false)
+    expect(airi.sent).toHaveLength(0)
   })
 
   it('strips bot mentions before forwarding', () => {
@@ -133,8 +125,6 @@ describe('createTextBridge', () => {
     const bridge = createTextBridge({
       airi,
       getAttachedTextChannelId: () => 'voice-1',
-      getExtraChannelIds: () => [],
-      isMentionOnly: () => true,
       getSelfUserId: () => selfId,
     })
 
@@ -149,25 +139,5 @@ describe('createTextBridge', () => {
     expect(forwarded).toBe(true)
     expect(airi.sent[0].text).toBe('hello there')
     expect(airi.sent[0].textRaw).toBe(raw)
-  })
-
-  it('forwards messages from configured extra channels', () => {
-    const airi = makeAiriChannel()
-    const bridge = createTextBridge({
-      airi,
-      getAttachedTextChannelId: () => undefined,
-      getExtraChannelIds: () => ['extra-1'],
-      isMentionOnly: () => false,
-      getSelfUserId: () => 'self',
-    })
-
-    const forwarded = bridge.handleMessage(makeMessage({
-      content: 'topic chat',
-      channelId: 'extra-1',
-      guildId: 'g1',
-    }) as never)
-
-    expect(forwarded).toBe(true)
-    expect(airi.sent[0].text).toBe('topic chat')
   })
 })

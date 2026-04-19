@@ -15,17 +15,7 @@ export interface TextBridgeOptions {
    */
   getAttachedTextChannelId: (guildId: string) => string | undefined
   /**
-   * Extra text channel IDs to always listen on (e.g. via remote configuration).
-   */
-  getExtraChannelIds: () => readonly string[]
-  /**
-   * When true, only messages that mention the bot (or DMs) are forwarded; when
-   * false, every non-bot message in a listened channel is forwarded.
-   */
-  isMentionOnly: () => boolean
-  /**
-   * Bot's own user id, used to detect mentions. Returning undefined disables the
-   * mention check (all messages in listened channels are forwarded instead).
+   * Bot's own user id, used to strip @mentions from forwarded text when present.
    */
   getSelfUserId: () => string | undefined
 }
@@ -41,14 +31,9 @@ export interface TextBridgeHandle {
 }
 
 /**
- * Returns a text-message router that decides which Discord messages should be
- * relayed to the AIRI pipeline as `input:text` events.
- *
- * Forwarding rules (evaluated in order):
- * 1. DMs (no guild) → always forward.
- * 2. Message channel is a voice-channel-attached chat → forward.
- * 3. Message channel id is in the `extraChannelIds` allow-list → forward.
- * 4. `mentionOnly === false` and the message came from a listened channel → forward.
+ * Returns a text-message router that relays Discord messages to AIRI as
+ * `input:text` only when the message is posted in the text chat attached to the
+ * voice channel the bot is currently connected to in that guild.
  *
  * When forwarding, mentions of the bot are stripped from the text payload.
  */
@@ -63,29 +48,18 @@ export function createTextBridge(options: TextBridgeOptions): TextBridgeHandle {
     if (!rawContent)
       return false
 
-    const isDM = !message.guild
-    const attachedChannelId = message.guildId
-      ? options.getAttachedTextChannelId(message.guildId)
-      : undefined
-
-    const extraIds = options.getExtraChannelIds()
-    const isVoiceAttached = attachedChannelId === message.channelId
-    const isInExtra = extraIds.includes(message.channelId)
-    const isInListenedChannel = isDM || isVoiceAttached || isInExtra
-
-    if (!isInListenedChannel) {
+    const guildId = message.guildId
+    if (!guildId)
       return false
-    }
+
+    const attachedChannelId = options.getAttachedTextChannelId(guildId)
+    if (attachedChannelId !== message.channelId)
+      return false
 
     const selfUserId = options.getSelfUserId()
     const isMentioned = selfUserId
       ? message.mentions.users.has(selfUserId)
       : false
-
-    const mentionOnly = options.isMentionOnly()
-    if (mentionOnly && !isDM && !isMentioned) {
-      return false
-    }
 
     const cleanedText = isMentioned
       ? stripDiscordMentions(rawContent)
@@ -97,7 +71,6 @@ export function createTextBridge(options: TextBridgeOptions): TextBridgeHandle {
     log
       .withField('author', message.author.tag)
       .withField('channelId', message.channelId)
-      .withField('isDM', isDM)
       .withField('mentioned', isMentioned)
       .log('Forwarding Discord text message to AIRI')
 

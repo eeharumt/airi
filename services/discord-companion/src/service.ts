@@ -7,7 +7,6 @@ import {
   Events,
   GatewayIntentBits,
   GuildMember,
-  Partials,
 } from 'discord.js'
 
 import { createAiriChannel } from './airi/channel'
@@ -58,9 +57,7 @@ export function createCompanionService(initialConfig: CompanionConfig): Companio
       GatewayIntentBits.GuildVoiceStates,
       GatewayIntentBits.GuildMessages,
       GatewayIntentBits.MessageContent,
-      GatewayIntentBits.DirectMessages,
     ],
-    partials: [Partials.Channel],
   })
 
   const airi = createAiriChannel({
@@ -79,8 +76,6 @@ export function createCompanionService(initialConfig: CompanionConfig): Companio
   const textBridge = createTextBridge({
     airi,
     getAttachedTextChannelId: guildId => voiceBridge.getAttachedTextChannelId(guildId),
-    getExtraChannelIds: () => config.textListen.extraChannelIds,
-    isMentionOnly: () => config.textListen.mentionOnly,
     getSelfUserId: () => discord.user?.id,
   })
 
@@ -89,24 +84,6 @@ export function createCompanionService(initialConfig: CompanionConfig): Companio
   })
 
   const applyRemoteConfig = async (incoming: CompanionRemoteConfig) => {
-    if (Array.isArray(incoming.textChannelIds)) {
-      config = {
-        ...config,
-        textListen: {
-          ...config.textListen,
-          extraChannelIds: Array.from(new Set(incoming.textChannelIds)),
-        },
-      }
-    }
-    if (typeof incoming.mentionOnly === 'boolean') {
-      config = {
-        ...config,
-        textListen: {
-          ...config.textListen,
-          mentionOnly: incoming.mentionOnly,
-        },
-      }
-    }
     if (incoming.autoJoin !== undefined) {
       config = {
         ...config,
