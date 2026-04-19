@@ -139,11 +139,42 @@ export const useChatOrchestratorStore = defineStore('chat-orchestrator', () => {
       chatContext.ingestContextMessage(minecraftContext)
 
     const sendingCreatedAt = Date.now()
+    const inputData = options.input?.type === 'input:text' ? options.input.data : undefined
+    const discordMeta = inputData && 'discord' in inputData ? inputData.discord : undefined
+    const discordMember = discordMeta?.guildMember
+    const textForParts = discordMember && inputData ? inputData.text : sendingMessage
+
+    const contentParts: CommonContentPart[] = [{ type: 'text', text: textForParts }]
+    if (options.attachments) {
+      for (const attachment of options.attachments) {
+        if (attachment.type === 'image') {
+          contentParts.push({
+            type: 'image_url',
+            image_url: {
+              url: `data:${attachment.mimeType};base64,${attachment.data}`,
+            },
+          })
+        }
+      }
+    }
+
+    const finalContent = contentParts.length > 1 ? contentParts : textForParts
+    const userDisplayNameForSession = discordMember
+      ? (discordMember.displayName || discordMember.nickname || undefined)
+      : undefined
+    const userMessageId = nanoid()
+
     // TODO: Expire or prune stale runtime contexts from disconnected services before composing.
     // The Minecraft page already times out service liveness locally, but the shared chat context
     // snapshot can still retain the last runtime context:update until we add cross-store expiry.
     const streamingMessageContext: ChatStreamEventContext = {
-      message: { role: 'user', content: sendingMessage, createdAt: sendingCreatedAt, id: nanoid() },
+      message: {
+        role: 'user',
+        content: finalContent,
+        createdAt: sendingCreatedAt,
+        id: userMessageId,
+        ...(userDisplayNameForSession ? { userDisplayName: userDisplayNameForSession } : {}),
+      },
       contexts: chatContext.getContextsSnapshot(),
       composedMessage: [],
       input: options.input,
@@ -182,22 +213,6 @@ export const useChatOrchestratorStore = defineStore('chat-orchestrator', () => {
     try {
       await hooks.emitBeforeMessageComposedHooks(sendingMessage, streamingMessageContext)
 
-      const contentParts: CommonContentPart[] = [{ type: 'text', text: sendingMessage }]
-
-      if (options.attachments) {
-        for (const attachment of options.attachments) {
-          if (attachment.type === 'image') {
-            contentParts.push({
-              type: 'image_url',
-              image_url: {
-                url: `data:${attachment.mimeType};base64,${attachment.data}`,
-              },
-            })
-          }
-        }
-      }
-
-      const finalContent = contentParts.length > 1 ? contentParts : sendingMessage
       if (!streamingMessageContext.input) {
         streamingMessageContext.input = {
           type: 'input:text',
@@ -214,7 +229,8 @@ export const useChatOrchestratorStore = defineStore('chat-orchestrator', () => {
         role: 'user',
         content: finalContent,
         createdAt: sendingCreatedAt,
-        id: nanoid(),
+        id: userMessageId,
+        ...(userDisplayNameForSession ? { userDisplayName: userDisplayNameForSession } : {}),
       })
       const sessionMessagesForSend = chatSession.getSessionMessages(sessionId)
 
@@ -290,7 +306,7 @@ export const useChatOrchestratorStore = defineStore('chat-orchestrator', () => {
       })
 
       const newMessages = sessionMessagesForSend.map((msg) => {
-        const { context: _context, id: _id, createdAt: _createdAt, ...withoutContext } = msg
+        const { context: _context, id: _id, createdAt: _createdAt, userDisplayName: _userDisplayName, ...withoutContext } = msg
         const rawMessage = toRaw(withoutContext)
 
         if (rawMessage.role === 'assistant') {
@@ -300,6 +316,23 @@ export const useChatOrchestratorStore = defineStore('chat-orchestrator', () => {
 
         return rawMessage
       })
+
+      if (discordMember) {
+        const lastComposed = newMessages.at(-1)
+        if (lastComposed && lastComposed.role === 'user') {
+          if (typeof lastComposed.content === 'string') {
+            lastComposed.content = sendingMessage
+          }
+          else if (Array.isArray(lastComposed.content)) {
+            const parts = lastComposed.content as CommonContentPart[]
+            const textIdx = parts.findIndex(p => p.type === 'text')
+            if (textIdx >= 0)
+              (parts[textIdx] as { type: 'text', text: string }).text = sendingMessage
+            else
+              parts.unshift({ type: 'text', text: sendingMessage })
+          }
+        }
+      }
 
       const contextsSnapshot = chatContext.getContextsSnapshot()
       const contextPromptText = formatContextPromptText(contextsSnapshot)

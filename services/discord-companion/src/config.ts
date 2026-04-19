@@ -15,6 +15,11 @@ export interface CompanionConfig {
   discordClientId: string
   airiUrl: string
   airiToken: string
+  /**
+   * When true, post AIRI assistant text into the same Discord text channel.
+   * Default false so replies appear only on Stage / other clients.
+   */
+  replyInDiscord: boolean
   autoJoin?: CompanionAutoJoin
   stt: {
     baseUrl: string
@@ -29,6 +34,8 @@ const RawEnvSchema = v.object({
   AIRI_URL: v.optional(v.string(), 'ws://localhost:6121/ws'),
   AIRI_TOKEN: v.optional(v.string(), ''),
   DISCORD_COMPANION_AUTO_JOIN: v.optional(v.string(), ''),
+  /** When "1", "true", "yes", "on" — echo assistant text to Discord. Default: off. */
+  DISCORD_COMPANION_REPLY_IN_CHANNEL: v.optional(v.string(), ''),
   OPENAI_STT_API_BASE_URL: v.optional(v.string(), 'https://api.openai.com/v1/'),
   OPENAI_STT_API_KEY: v.optional(v.string(), ''),
   OPENAI_STT_MODEL: v.optional(v.string(), 'whisper-1'),
@@ -58,6 +65,13 @@ export function parseAutoJoin(raw: string): CompanionAutoJoin | undefined {
   return { guildId, channelId }
 }
 
+function parseTruthyEnv(raw: string | undefined): boolean {
+  if (raw === undefined || raw === '')
+    return false
+  const x = raw.trim().toLowerCase()
+  return x === '1' || x === 'true' || x === 'yes' || x === 'on'
+}
+
 /**
  * Reads and validates companion configuration from `process.env` (with sensible
  * fallbacks).
@@ -74,6 +88,7 @@ export function loadCompanionConfigFromEnv(source: NodeJS.ProcessEnv = env): Com
     AIRI_URL: source.AIRI_URL,
     AIRI_TOKEN: source.AIRI_TOKEN,
     DISCORD_COMPANION_AUTO_JOIN: source.DISCORD_COMPANION_AUTO_JOIN,
+    DISCORD_COMPANION_REPLY_IN_CHANNEL: source.DISCORD_COMPANION_REPLY_IN_CHANNEL,
     OPENAI_STT_API_BASE_URL: source.OPENAI_STT_API_BASE_URL,
     OPENAI_STT_API_KEY: source.OPENAI_STT_API_KEY,
     OPENAI_STT_MODEL: source.OPENAI_STT_MODEL,
@@ -84,6 +99,7 @@ export function loadCompanionConfigFromEnv(source: NodeJS.ProcessEnv = env): Com
     discordClientId: parsed.DISCORD_COMPANION_CLIENT_ID,
     airiUrl: parsed.AIRI_URL,
     airiToken: parsed.AIRI_TOKEN || 'abcd',
+    replyInDiscord: parseTruthyEnv(parsed.DISCORD_COMPANION_REPLY_IN_CHANNEL),
     autoJoin: parseAutoJoin(parsed.DISCORD_COMPANION_AUTO_JOIN),
     stt: {
       baseUrl: parsed.OPENAI_STT_API_BASE_URL,
@@ -101,11 +117,14 @@ export interface CompanionRemoteConfig {
   enabled?: boolean
   token?: string
   autoJoin?: CompanionAutoJoin | null
+  /** Override env: echo assistant replies into Discord text channels. */
+  replyInDiscord?: boolean
 }
 
 export const CompanionRemoteConfigSchema = v.object({
   enabled: v.optional(v.boolean()),
   token: v.optional(v.string()),
+  replyInDiscord: v.optional(v.boolean()),
   autoJoin: v.optional(
     v.nullable(
       v.object({

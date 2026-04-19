@@ -264,6 +264,13 @@ export const useContextBridgeStore = defineStore('mods:api:context-bridge', () =
             messageText = `${overrides.messagePrefix}${text}`
           }
 
+          // Discord companion pins history to `discord-guild-*`, but Stage renders the
+          // character's `activeSessionId`. Without this, messages never appear in the panel.
+          const isDiscordSourced = 'discord' in event.data && event.data.discord != null
+          const ingestSessionId = isDiscordSourced && chatSession.activeSessionId
+            ? chatSession.activeSessionId
+            : targetSessionId
+
           // TODO(@nekomeowww): This only guard for input:text events handling and doesn't cover the entire ingestion
           // process. Another critical path of spark:notify is affected too, I think for better future development
           // experience, we should discover and find either a leader election or distributed lock solution to
@@ -301,7 +308,7 @@ export const useContextBridgeStore = defineStore('mods:api:context-bridge', () =
                     contextUpdates: normalizedContextUpdates,
                   },
                 },
-              }, targetSessionId)
+              }, ingestSessionId)
             }
             catch (err) {
               console.error('Error ingesting text input via context bridge:', err)

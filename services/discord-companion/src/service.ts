@@ -80,6 +80,9 @@ export function createCompanionService(initialConfig: CompanionConfig): Companio
   })
 
   airi.onOutputMessage(async ({ channelId, content }) => {
+    if (!config.replyInDiscord)
+      return
+
     await output.send(channelId, content)
   })
 
@@ -88,6 +91,13 @@ export function createCompanionService(initialConfig: CompanionConfig): Companio
       config = {
         ...config,
         autoJoin: incoming.autoJoin ?? undefined,
+      }
+    }
+
+    if (incoming.replyInDiscord !== undefined) {
+      config = {
+        ...config,
+        replyInDiscord: incoming.replyInDiscord,
       }
     }
 

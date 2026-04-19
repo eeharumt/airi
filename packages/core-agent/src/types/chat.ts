@@ -47,7 +47,8 @@ export interface ContextMessage extends ContextUpdate<Record<string, unknown>, u
   createdAt: number
 }
 
-export type ChatHistoryItem = (ChatMessage | ErrorMessage) & { context?: ContextMessage } & { createdAt?: number, id?: string }
+/** Optional bubble title for `role: 'user'` (e.g. Discord server display name). */
+export type ChatHistoryItem = (ChatMessage | ErrorMessage) & { context?: ContextMessage } & { createdAt?: number, id?: string, userDisplayName?: string }
 
 export interface ChatStreamEventContext {
   message: ChatHistoryItem

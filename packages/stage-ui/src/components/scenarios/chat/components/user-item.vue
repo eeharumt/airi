@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ChatHistoryItem, ChatMessage } from '../../../../types/chat'
+import type { ChatHistoryItem } from '../../../../types/chat'
 
 import { isStageCapacitor, isStageWeb } from '@proj-airi/stage-shared'
 import { computed } from 'vue'
@@ -9,7 +9,7 @@ import { ChatActionMenu } from '../components/action-menu'
 import { getChatHistoryItemCopyText } from '../utils'
 
 const props = withDefaults(defineProps<{
-  message: Extract<ChatMessage, { role: 'user' }>
+  message: Extract<ChatHistoryItem, { role: 'user' }>
   label: string
   variant?: 'desktop' | 'mobile'
 }>(), {
@@ -45,7 +45,17 @@ const containerClasses = computed(() => [
 const boxClasses = computed(() => [
   props.variant === 'mobile' ? 'px-2 py-2 text-sm bg-neutral-100/90 dark:bg-neutral-800/90' : 'px-3 py-3 bg-neutral-100/80 dark:bg-neutral-800/80',
 ])
-const copyText = computed(() => getChatHistoryItemCopyText(props.message as ChatHistoryItem))
+const copyText = computed(() => getChatHistoryItemCopyText(props.message))
+
+const titleLabel = computed(() =>
+  props.message.userDisplayName?.trim() || props.label,
+)
+
+const titleVisibilityClass = computed(() =>
+  props.message.userDisplayName?.trim()
+    ? 'inline'
+    : 'inline <sm:hidden',
+)
 </script>
 
 <template>
@@ -67,7 +77,7 @@ const copyText = computed(() => getChatHistoryItemCopyText(props.message as Chat
           ]"
         >
           <div>
-            <span text-sm text="black/60 dark:white/65" font-normal class="inline <sm:hidden">{{ label }}</span>
+            <span text-sm text="black/60 dark:white/65" font-normal :class="titleVisibilityClass">{{ titleLabel }}</span>
           </div>
           <MarkdownRenderer
             :content="content as string"

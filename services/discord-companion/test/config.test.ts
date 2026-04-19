@@ -38,6 +38,7 @@ describe('isCompanionRemoteConfig', () => {
       autoJoin: { guildId: 'g', channelId: 'c' },
     })).toBe(true)
     expect(isCompanionRemoteConfig({ autoJoin: null })).toBe(true)
+    expect(isCompanionRemoteConfig({ replyInDiscord: true })).toBe(true)
   })
 
   it('rejects invalid shapes', () => {
@@ -59,6 +60,12 @@ describe('loadCompanionConfigFromEnv', () => {
     expect(config.airiToken).toBe('abcd')
     expect(config.autoJoin).toBeUndefined()
     expect(config.stt.model).toBe('whisper-1')
+    expect(config.replyInDiscord).toBe(false)
+  })
+
+  it('enables Discord channel replies when DISCORD_COMPANION_REPLY_IN_CHANNEL is truthy', () => {
+    expect(loadCompanionConfigFromEnv({ DISCORD_COMPANION_REPLY_IN_CHANNEL: '1' }).replyInDiscord).toBe(true)
+    expect(loadCompanionConfigFromEnv({ DISCORD_COMPANION_REPLY_IN_CHANNEL: 'true' }).replyInDiscord).toBe(true)
   })
 
   it('reads DISCORD_TOKEN as a fallback for the companion token', () => {

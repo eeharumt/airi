@@ -15,7 +15,13 @@ const serverSendMock = vi.fn()
 const ensureConnectedMock = vi.fn().mockResolvedValue(undefined)
 const onReconnectedMock = vi.fn(() => () => {})
 const onContextUpdateMock = vi.fn(() => () => {})
-const onEventMock = vi.fn(() => () => {})
+const inputTextHandlers: Array<(event: any) => void | Promise<void>> = []
+const onEventMock = vi.fn((type: string, callback: (event: any) => void | Promise<void>) => {
+  if (type === 'input:text')
+    inputTextHandlers.push(callback)
+
+  return () => {}
+})
 const getProviderInstanceMock = vi.fn()
 
 const activeProviderRef = ref<string | null>(null)
@@ -181,6 +187,7 @@ describe('context bridge contract', () => {
     onReconnectedMock.mockClear()
     onContextUpdateMock.mockClear()
     onEventMock.mockClear()
+    inputTextHandlers.length = 0
     getProviderInstanceMock.mockReset()
     chatOrchestratorMock.ingest.mockReset()
     broadcastContextMock.mockReset()
@@ -260,6 +267,38 @@ describe('context bridge contract', () => {
     await Promise.resolve()
 
     expect(broadcastStreamMock).not.toHaveBeenCalled()
+
+    await store.dispose()
+  })
+
+  it('routes Discord input:text to active session so Stage shows the message', async () => {
+    getProviderInstanceMock.mockResolvedValue({ chat: () => ({}) })
+    activeProviderRef.value = 'mock-provider'
+    activeModelRef.value = 'mock-model'
+
+    const store = useContextBridgeStore()
+    await store.initialize()
+
+    expect(inputTextHandlers.length).toBeGreaterThan(0)
+    const handler = inputTextHandlers[0]!
+
+    await handler({
+      data: {
+        text: 'hello',
+        overrides: {
+          sessionId: 'discord-guild-999',
+          messagePrefix: '(From Discord user X): ',
+        },
+        discord: {
+          guildMember: { id: 'u1', displayName: 'X', nickname: 'X' },
+          guildId: 'g1',
+        },
+      },
+    })
+
+    expect(chatOrchestratorMock.ingest).toHaveBeenCalledTimes(1)
+    const [, , sessionArg] = chatOrchestratorMock.ingest.mock.calls[0] ?? []
+    expect(sessionArg).toBe('session-1')
 
     await store.dispose()
   })

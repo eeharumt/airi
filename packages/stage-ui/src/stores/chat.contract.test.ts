@@ -307,6 +307,47 @@ describe('chat orchestrator contract', () => {
     expect(llmStreamMock).not.toHaveBeenCalled()
   })
 
+  it('persists Discord user display name and raw text in session while sending prefixed text to the LLM', async () => {
+    getContextsSnapshotMock.mockReturnValue({})
+
+    let composedMessages: Message[] = []
+    llmStreamMock.mockImplementation(async (_model: string, _chatProvider: ChatProvider, messages: Message[], options: any) => {
+      composedMessages = messages
+      await options.onStreamEvent({ type: 'text-delta', text: 'hello' })
+      await options.onStreamEvent({ type: 'finish', finishReason: 'stop' })
+    })
+
+    const prefix = '(From Discord user Ayaka on server \'Friends\'): '
+    const raw = 'hi there'
+
+    const store = useChatOrchestratorStore()
+    await store.ingest(`${prefix}${raw}`, {
+      model: 'gpt-test',
+      chatProvider: provider,
+      input: {
+        type: 'input:text',
+        data: {
+          text: raw,
+          discord: {
+            guildMember: { id: 'u1', displayName: 'Ayaka', nickname: 'Ayaka' },
+            guildId: 'g1',
+            guildName: 'Friends',
+            channelId: 'c1',
+          },
+          overrides: { messagePrefix: prefix },
+        },
+      },
+    })
+
+    const sessionUser = sessionMessages['session-1'].find((m: any) => m.role === 'user')
+    expect(sessionUser?.content).toBe(raw)
+    expect(sessionUser?.userDisplayName).toBe('Ayaka')
+
+    const userPayload = composedMessages.find(m => m.role === 'user') as any
+    expect(typeof userPayload.content).toBe('string')
+    expect(userPayload.content).toBe(`${prefix}${raw}`)
+  })
+
   it('uses forked session id in ingestOnFork and keeps public store contract keys', async () => {
     getContextsSnapshotMock.mockReturnValue({})
     forkSessionMock.mockResolvedValue('session-forked')
